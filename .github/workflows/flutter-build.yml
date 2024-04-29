@@ -1119,7 +1119,6 @@ jobs:
 
   build-rustdesk-sciter-arm:
     if: ${{ inputs.upload-artifact }} && false
-    name: build-rustdesk(sciter)
     runs-on: [self-hosted, Linux, ARM64]
     strategy:
       fail-fast: false
