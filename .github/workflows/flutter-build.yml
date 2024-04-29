@@ -1395,6 +1395,7 @@ jobs:
                   git reset --hard ${{ env.FLUTTER_VERSION }}
                   mv bin/flutter-elinux bin/flutter
                   bin/flutter doctor -v
+                  bin/flutter precache --linux
                 popd
                 cp -R flutter/bin/cache/artifacts/engine/linux-x64/shader_lib flutter-elinux/flutter/bin/cache/artifacts/engine/linux-arm64
                 export PATH=/opt/flutter-elinux/bin:$PATH
