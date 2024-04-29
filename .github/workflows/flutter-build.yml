@@ -1344,7 +1344,7 @@ jobs:
           path: ./target/release/
 
       - uses: rustdesk-org/run-on-arch-action@amd64-support
-        name: Build rustdesk binary for ${{ matrix.job.arch }}
+        name: flutter build 
         id: vcpkg
         with:
           arch: ${{ matrix.job.arch }}
@@ -1380,12 +1380,23 @@ jobs:
           run: |
             # disable git safe.directory
             git config --global --add safe.directory "*"
+            pushd /workspace
+            case ${{ matrix.job.arch }} in
+              aarch64)
+                export PATH=/opt/flutter-elinux/bin:$PATH
+                sed -i "s/flutter build linux --release/flutter-elinux build linux/g" ./build.py
+                export ARCH=arm64
+                sed -i "s/x64\/release/arm64\/release/g" ./build.py
+              ;;
+              x86_64)
+                export PATH=/opt/flutter/bin:$PATH
+              ;;
+            esac
+            popd
             # Setup Flutter
             pushd /opt
             wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${{ env.FLUTTER_VERSION }}-stable.tar.xz
             tar xf flutter_linux_${{ env.FLUTTER_VERSION }}-stable.tar.xz
-            ls -l .
-            export PATH=/opt/flutter/bin:$PATH
             case ${{ matrix.job.arch }} in
               aarch64)
                 # clone repo and reset to flutter ${{ env.FLUTTER_VERSION }}
@@ -1393,24 +1404,16 @@ jobs:
                 pushd flutter-elinux
                   git fetch
                   git reset --hard ${{ env.FLUTTER_VERSION }}
-                  mv bin/flutter-elinux bin/flutter
-                  bin/flutter doctor -v
-                  bin/flutter precache --linux
+                  bin/flutter-elinux doctor -v
+                  bin/flutter-elinux precache --linux
                 popd
                 cp -R flutter/bin/cache/artifacts/engine/linux-x64/shader_lib flutter-elinux/flutter/bin/cache/artifacts/engine/linux-arm64
-                export PATH=/opt/flutter-elinux/bin:$PATH
-                rm -rf flutter
+              ;;
+              x86_64)
+                flutter doctor -v
               ;;
             esac
-            flutter doctor -v
             pushd /workspace
-            # edit to corresponding arch
-            case ${{ matrix.job.arch }} in
-              aarch64)
-                export ARCH=arm64
-                sed -i "s/x64\/release/arm64\/release/g" ./build.py
-              ;;
-            esac
             export CARGO_INCREMENTAL=0
             python3 ./build.py --flutter --skip-cargo
             # rpm package
