@@ -47,7 +47,7 @@ jobs:
       fail-fast: false
 
   build-for-windows-flutter:
-    name: ${{ matrix.job.target }} (${{ matrix.job.os }})
+    name: ${{ matrix.job.target }} 
     needs: [build-RustDeskTempTopMostWindow]
     runs-on: ${{ matrix.job.os }}
     strategy:
@@ -540,7 +540,7 @@ jobs:
       #       flutter/build/ios/ipa/*.ipa
 
   build-for-macOS:
-    name: ${{ matrix.job.target }} (${{ matrix.job.os }}) [${{ matrix.job.extra-build-args }}]
+    name: ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
@@ -1144,7 +1144,6 @@ jobs:
             cat ~/.cargo/config
             # start build
             pushd /workspace
-            # no need mock on x86_64
             export VCPKG_ROOT=/opt/artifacts/vcpkg
             export DEFAULT_FEAT=""
             if ${{ matrix.job.enable-headless }}; then
@@ -1160,7 +1159,7 @@ jobs:
 
   build-rustdesk-sciter-arm:
     if: ${{ inputs.upload-artifact }}
-    name: build-rustdesk(sciter) ${{ matrix.job.target }} (${{ matrix.job.os }}) [${{ matrix.job.extra-build-features }}]
+    name: build-rustdesk(sciter)
     runs-on: [self-hosted, Linux, ARM64]
     strategy:
       fail-fast: false
@@ -1356,42 +1355,36 @@ jobs:
               distro: ubuntu18.04,
               target: x86_64-unknown-linux-gnu,
               extra-build-features: "",
-              hwcodec: --hwcodec,
             }
           - {
               arch: x86_64,
               distro: ubuntu18.04,
               target: x86_64-unknown-linux-gnu,
               extra-build-features: "flatpak",
-              hwcodec: --hwcodec,
             }
           - {
               arch: x86_64,
               distro: ubuntu18.04,
               target: x86_64-unknown-linux-gnu,
               extra-build-features: "appimage",
-              hwcodec: --hwcodec,
             }
           - {
               arch: aarch64,
               distro: ubuntu18.04,
               target: aarch64-unknown-linux-gnu,
               extra-build-features: "",
-              hwcodec: "",
             }
           - {
               arch: aarch64,
               distro: ubuntu20.04,
               target: aarch64-unknown-linux-gnu,
               extra-build-features: "flatpak",
-              hwcodec: "",
             }
           - {
               arch: aarch64,
               distro: ubuntu20.04,
               target: aarch64-unknown-linux-gnu,
               extra-build-features: "appimage",
-              hwcodec: "",
             }
     steps:
       - name: Checkout source code
@@ -1478,7 +1471,7 @@ jobs:
               ;;
             esac
             export CARGO_INCREMENTAL=0
-            python3 ./build.py --flutter ${{ matrix.job.hwcodec }} --skip-cargo
+            python3 ./build.py --flutter --skip-cargo
             # rpm package
             echo -e "start packaging fedora package"
             pushd /workspace
@@ -1490,6 +1483,7 @@ jobs:
               aarch64)
                 sed -i "s/linux\/x64/linux\/arm64/g" ./res/rpm-flutter.spec
                 ;;
+            esac
             HBB=`pwd` rpmbuild ./res/rpm-flutter.spec -bb
             pushd ~/rpmbuild/RPMS/${{ matrix.job.arch }}
             mkdir -p /opt/artifacts/rpm
