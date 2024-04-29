@@ -1386,6 +1386,20 @@ jobs:
             tar xf flutter_linux_${{ env.FLUTTER_VERSION }}-stable.tar.xz
             ls -l .
             export PATH=/opt/flutter/bin:$PATH
+            case ${{ matrix.job.arch }} in
+              aarch64)
+                # clone repo and reset to flutter ${{ env.FLUTTER_VERSION }}
+                git clone https://github.com/sony/flutter-elinux.git || true
+                pushd flutter-elinux
+                  git fetch
+                  git reset --hard ${{ env.FLUTTER_VERSION }}
+                  mv bin/flutter-elinux bin/flutter
+                popd
+                cp -R flutter/bin/cache/artifacts/engine/linux-x64/shader_lib flutter-elinux/flutter/bin/cache/artifacts/engine/linux-arm64
+                export PATH=/opt/flutter-elinux/bin:$PATH
+                rm -rf flutter
+              ;;
+            esac
             flutter doctor -v
             pushd /workspace
             # edit to corresponding arch
@@ -1394,10 +1408,6 @@ jobs:
                 export ARCH=arm64
                 sed -i "s/x64\/release/arm64\/release/g" ./build.py
               ;;
-              armv7)
-                export ARCH=armhf
-                sed -i "s/x64\/release/arm\/release/g" ./build.py
-              ;;
             esac
             export CARGO_INCREMENTAL=0
             python3 ./build.py --flutter --skip-cargo
@@ -1405,10 +1415,6 @@ jobs:
             echo -e "start packaging fedora package"
             pushd /workspace
             case ${{ matrix.job.arch }} in
-              armv7)
-                sed -i "s/64bit/32bit/g" ./res/rpm-flutter.spec
-                sed -i "s/linux\/x64/linux\/arm/g" ./res/rpm-flutter.spec
-                ;;
               aarch64)
                 sed -i "s/linux\/x64/linux\/arm64/g" ./res/rpm-flutter.spec
                 ;;
@@ -1423,10 +1429,6 @@ jobs:
             echo -e "start packaging suse package"
             pushd /workspace
             case ${{ matrix.job.arch }} in
-              armv7)
-                sed -i "s/64bit/32bit/g" ./res/rpm-flutter-suse.spec
-                sed -i "s/linux\/x64/linux\/arm/g" ./res/rpm-flutter-suse.spec
-                ;;
               aarch64)
                 sed -i "s/linux\/x64/linux\/arm64/g" ./res/rpm-flutter-suse.spec
                 ;;
