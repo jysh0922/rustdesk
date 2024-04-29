@@ -1384,7 +1384,7 @@ jobs:
             case ${{ matrix.job.arch }} in
               aarch64)
                 export PATH=/opt/flutter-elinux/bin:$PATH
-                sed -i "s/flutter build linux --release/flutter-elinux build linux/g" ./build.py
+                sed -i "s/flutter build linux --release/flutter-elinux build linux --verbose/g" ./build.py
                 export ARCH=arm64
                 sed -i "s/x64\/release/arm64\/release/g" ./build.py
               ;;
